@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { cachedFetch } from '@/app/api/utils/cache'
 
 const API_KEY = process.env.COINMARKETCAP_API_KEY
 const CRYPTO_IDS = {
@@ -13,25 +14,26 @@ export async function GET() {
   }
 
   try {
-    const response = await fetch(
-      `https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest?convert=KRW&id=${Object.values(CRYPTO_IDS).join(',')}`,
-      {
-        headers: {
-          'X-CMC_PRO_API_KEY': API_KEY,
+    const prices = await cachedFetch('crypto', async () => {
+      const response = await fetch(
+        `https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest?convert=KRW&id=${Object.values(CRYPTO_IDS).join(',')}`,
+        {
+          headers: {
+            'X-CMC_PRO_API_KEY': API_KEY,
+          }
         }
+      )
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch cryptocurrency data')
       }
-    )
 
-    if (!response.ok) {
-      throw new Error('Failed to fetch cryptocurrency data')
-    }
-
-    const data = await response.json()
-
-    const prices = Object.entries(CRYPTO_IDS).reduce((acc, [name, id]) => {
-      acc[name] = data.data[id].quote.KRW.price
-      return acc
-    }, {} as Record<string, number>)
+      const data = await response.json()
+      return Object.entries(CRYPTO_IDS).reduce((acc, [name, id]) => {
+        acc[name] = data.data[id].quote.KRW.price
+        return acc
+      }, {} as Record<string, number>)
+    })
 
     return NextResponse.json(prices)
   } catch (error) {

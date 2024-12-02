@@ -2,10 +2,11 @@
 
 import { useEffect, useState } from "react"
 import { useTheme } from "next-themes"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Button } from "@/components/ui/button"
-import { Moon, Sun } from 'lucide-react'
+import { Moon, Sun, Github, MessageSquarePlus, RefreshCw } from 'lucide-react'
+import Link from 'next/link'
 
 interface WidgetData {
   weather: string
@@ -18,11 +19,12 @@ interface WidgetData {
   }
 }
 
-export default function Widget() {
+export default function KoreaInfoWidget() {
   const [data, setData] = useState<WidgetData | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [mounted, setMounted] = useState(false)
   const { theme, setTheme } = useTheme()
+  const [currentDateTime, setCurrentDateTime] = useState<string>('')
 
   useEffect(() => {
     setMounted(true)
@@ -65,26 +67,57 @@ export default function Widget() {
     fetchData()
   }, [])
 
+  useEffect(() => {
+    const timer = setInterval(() => {
+      const now = new Date()
+      const dateOptions: Intl.DateTimeFormatOptions = {
+        timeZone: 'Asia/Seoul',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      }
+      const timeOptions: Intl.DateTimeFormatOptions = {
+        timeZone: 'Asia/Seoul',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false
+      }
+      const dateString = now.toLocaleDateString('ko-KR', dateOptions)
+      const timeString = now.toLocaleTimeString('ko-KR', timeOptions)
+      setCurrentDateTime(`${dateString} ${timeString}`)
+    }, 1000)
+
+    return () => clearInterval(timer)
+  }, [])
+
   if (!mounted) {
     return null
   }
 
   return (
     <Card className="w-full max-w-md mx-auto">
-      <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle>Hyunsoo's Personal Widget</CardTitle>
-        <Button
-          variant="outline"
-          size="icon"
-          onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-          aria-label="Toggle dark mode"
-        >
-          {theme === "dark" ? (
-            <Sun className="h-4 w-4" />
-          ) : (
-            <Moon className="h-4 w-4" />
-          )}
-        </Button>
+      <CardHeader className="flex flex-col items-start justify-between space-y-2">
+        <div className="flex w-full justify-between items-center">
+          <CardTitle>Hyunsoo's Personal Widget</CardTitle>
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+            aria-label="Toggle dark mode"
+          >
+            {theme === "dark" ? (
+              <Sun className="h-4 w-4" />
+            ) : (
+              <Moon className="h-4 w-4" />
+            )}
+          </Button>
+        </div>
+        <p className="text-sm text-muted-foreground" aria-live="polite">KST: {currentDateTime}</p>
+        <div className="flex items-center space-x-2 text-xs text-muted-foreground">
+          <RefreshCw className="h-3 w-3" />
+          <span>API fetcher updates widget information every 5 min</span>
+        </div>
       </CardHeader>
       <CardContent className="grid gap-4">
         {error ? (
@@ -113,17 +146,17 @@ export default function Widget() {
               <CardContent className="grid gap-2">
                 <InfoItem
                   title="Bitcoin"
-                  value={data ? `$${data.cryptoPrices.bitcoin.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}` : undefined}
+                  value={data ? `$${data.cryptoPrices.bitcoin.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : undefined}
                   loading={!data}
                 />
                 <InfoItem
                   title="Ethereum"
-                  value={data ? `$${data.cryptoPrices.ethereum.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}` : undefined}
+                  value={data ? `$${data.cryptoPrices.ethereum.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : undefined}
                   loading={!data}
                 />
                 <InfoItem
                   title="Kaia"
-                  value={data ? `$${data.cryptoPrices.kaia.toFixed(0)}` : undefined}
+                  value={data ? `$${data.cryptoPrices.kaia.toFixed(4)}` : undefined}
                   loading={!data}
                 />
               </CardContent>
@@ -131,6 +164,33 @@ export default function Widget() {
           </>
         )}
       </CardContent>
+      <CardFooter className="flex flex-col items-center justify-center space-y-4 pt-4 border-t">
+        <div className="flex items-center space-x-2">
+          <MessageSquarePlus className="h-4 w-4 text-muted-foreground" />
+          <p className="text-sm text-muted-foreground">Have a feature request?</p>
+        </div>
+        <Link 
+          href="https://github.com/hyunsooda/widget/issues/new"
+          target="_blank" 
+          rel="noopener noreferrer"
+          className="text-sm font-medium text-primary hover:underline"
+        >
+          Submit an issue or PR on GitHub
+        </Link>
+        <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+          <Github className="h-4 w-4" />
+          <Link 
+            href="https://github.com/hyunsooda/widget" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="hover:text-primary transition-colors"
+          >
+            View source
+          </Link>
+          <span>•</span>
+          <span>Developed by Hyunsoo Shin</span>
+        </div>
+      </CardFooter>
     </Card>
   )
 }
@@ -147,5 +207,3 @@ function InfoItem({ title, value, loading }: { title: string; value?: string; lo
     </div>
   )
 }
-
-

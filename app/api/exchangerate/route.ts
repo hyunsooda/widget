@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { cachedFetch } from '@/app/api/utils/cache'
 
 const API_KEY = process.env.EXCHANGERATE_API_KEY
 
@@ -8,14 +9,17 @@ export async function GET() {
   }
 
   try {
-    const response = await fetch(
-      `https://v6.exchangerate-api.com/v6/${API_KEY}/latest/USD`
-    )
+    const data = await cachedFetch('exchangerate', async () => {
+      const response = await fetch(
+        `https://v6.exchangerate-api.com/v6/${API_KEY}/latest/USD`
+      )
 
-    if (!response.ok) {
-      throw new Error('Failed to fetch exchange rate data')
-    }
-    const data = await response.json()
+      if (!response.ok) {
+        throw new Error('Failed to fetch exchange rate data')
+      }
+      return await response.json()
+    })
+    
     return NextResponse.json({
       price: data.conversion_rates.KRW
     });
