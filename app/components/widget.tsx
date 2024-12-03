@@ -154,17 +154,17 @@ export default function KoreaInfoWidget() {
               <CardContent className="grid gap-2">
                 <InfoItem
                   title="Bitcoin"
-                  value={data ? `$${data.cryptoPrices.bitcoin.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : undefined}
+                  value={data ? `₩${data.cryptoPrices.bitcoin.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : undefined}
                   loading={!data}
                 />
                 <InfoItem
                   title="Ethereum"
-                  value={data ? `$${data.cryptoPrices.ethereum.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : undefined}
+                  value={data ? `₩${data.cryptoPrices.ethereum.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : undefined}
                   loading={!data}
                 />
                 <InfoItem
                   title="Kaia"
-                  value={data ? `$${data.cryptoPrices.kaia.toFixed(4)}` : undefined}
+                  value={data ? `₩${data.cryptoPrices.kaia.toFixed(4)}` : undefined}
                   loading={!data}
                 />
               </CardContent>
