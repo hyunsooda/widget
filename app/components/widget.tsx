@@ -175,7 +175,7 @@ export default function KoreaInfoWidget() {
       <CardFooter className="flex flex-col items-center justify-center space-y-4 pt-4 border-t">
         <div className="flex items-center space-x-2">
           <MessageSquarePlus className="h-4 w-4 text-muted-foreground" />
-          <p className="text-sm text-muted-foreground">Have a feature request?</p>
+          <p className="text-sm text-muted-foreground">Have a new item request?</p>
         </div>
         <Link
           href="https://github.com/hyunsooda/widget/issues/new"
@@ -196,7 +196,7 @@ export default function KoreaInfoWidget() {
             View source
           </Link>
           <span>•</span>
-          <span>Developed by Hyunsoo Shin</span>
+          <span>Maintained by Hyunsoo Shin</span>
         </div>
       </CardFooter>
     </Card>
