@@ -5,7 +5,7 @@ import { useTheme } from "next-themes"
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Button } from "@/components/ui/button"
-import { Moon, Sun, Github, MessageSquarePlus, RefreshCw } from 'lucide-react'
+import { Moon, Sun, Github, MessageSquarePlus, RefreshCw, Users } from 'lucide-react'
 import Link from 'next/link'
 
 interface WidgetData {
@@ -17,6 +17,7 @@ interface WidgetData {
     ethereum: number
     kaia: number
   }
+  visitorCount: number
 }
 
 export default function KoreaInfoWidget() {
@@ -28,17 +29,18 @@ export default function KoreaInfoWidget() {
 
   useEffect(() => {
     setMounted(true)
-    
+
     const fetchData = async () => {
       try {
-        const [weatherResponse, cryptoResponse, stockResponse, exchangeRateResponse] = await Promise.all([
+        const [weatherResponse, cryptoResponse, stockResponse, exchangeRateResponse, visitorResponse] = await Promise.all([
           fetch('/api/weather'),
           fetch('/api/crypto'),
           fetch('/api/stock'),
-          fetch('/api/exchangerate')
+          fetch('/api/exchangerate'),
+          fetch('/api/visitors')
         ])
 
-        if (!weatherResponse.ok || !cryptoResponse.ok || !stockResponse.ok || !exchangeRateResponse.ok) {
+        if (!weatherResponse.ok || !cryptoResponse.ok || !stockResponse.ok || !exchangeRateResponse.ok || !visitorResponse.ok) {
           throw new Error('Failed to fetch data')
         }
 
@@ -46,6 +48,7 @@ export default function KoreaInfoWidget() {
         const cryptoData = await cryptoResponse.json()
         const stockData = await stockResponse.json()
         const exchangeRateData = await exchangeRateResponse.json()
+        const visitorData = await visitorResponse.json()
 
         setData({
           weather: weatherData.weather,
@@ -56,6 +59,7 @@ export default function KoreaInfoWidget() {
             ethereum: cryptoData.ethereum,
             kaia: cryptoData.kaia,
           },
+          visitorCount: visitorData.count
         })
       } catch (error) {
         console.error('Error fetching data:', error)
@@ -118,6 +122,10 @@ export default function KoreaInfoWidget() {
           <RefreshCw className="h-3 w-3" />
           <span>API fetcher updates widget information every 5 min</span>
         </div>
+        <div className="flex items-center space-x-2 text-sm">
+          <Users className="h-4 w-4 text-muted-foreground" />
+          <span>Visitors today: {data?.visitorCount ?? <Skeleton className="h-4 w-[30px] inline-block" />}</span>
+        </div>
       </CardHeader>
       <CardContent className="grid gap-4">
         {error ? (
@@ -169,9 +177,9 @@ export default function KoreaInfoWidget() {
           <MessageSquarePlus className="h-4 w-4 text-muted-foreground" />
           <p className="text-sm text-muted-foreground">Have a feature request?</p>
         </div>
-        <Link 
+        <Link
           href="https://github.com/hyunsooda/widget/issues/new"
-          target="_blank" 
+          target="_blank"
           rel="noopener noreferrer"
           className="text-sm font-medium text-primary hover:underline"
         >
@@ -179,9 +187,9 @@ export default function KoreaInfoWidget() {
         </Link>
         <div className="flex items-center space-x-2 text-sm text-muted-foreground">
           <Github className="h-4 w-4" />
-          <Link 
-            href="https://github.com/hyunsooda/widget" 
-            target="_blank" 
+          <Link
+            href="https://github.com/hyunsooda/widget"
+            target="_blank"
             rel="noopener noreferrer"
             className="hover:text-primary transition-colors"
           >
