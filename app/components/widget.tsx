@@ -11,6 +11,11 @@ import Link from 'next/link'
 interface WidgetData {
   weather: string
   samsungStock: number
+  googleStock: number
+  metaStock: number
+  nvidiaStock: number
+  microsoftStock: number
+  goldPrice: number | null
   exchangeRate: number
   cryptoPrices: {
     bitcoin: number
@@ -32,12 +37,13 @@ export default function KoreaInfoWidget() {
 
     const fetchData = async () => {
       try {
-        const [weatherResponse, cryptoResponse, stockResponse, exchangeRateResponse, visitorResponse] = await Promise.all([
+        const [weatherResponse, cryptoResponse, stockResponse, exchangeRateResponse, visitorResponse, goldResponse] = await Promise.all([
           fetch('/api/weather'),
           fetch('/api/crypto'),
           fetch('/api/stock'),
           fetch('/api/exchangerate'),
-          fetch('/api/visitors')
+          fetch('/api/visitors'),
+          fetch('/api/gold')
         ])
 
         if (!weatherResponse.ok || !cryptoResponse.ok || !stockResponse.ok || !exchangeRateResponse.ok || !visitorResponse.ok) {
@@ -49,10 +55,16 @@ export default function KoreaInfoWidget() {
         const stockData = await stockResponse.json()
         const exchangeRateData = await exchangeRateResponse.json()
         const visitorData = await visitorResponse.json()
+        const goldData = goldResponse.ok ? await goldResponse.json() : { price: null }
 
         setData({
           weather: weatherData.weather,
-          samsungStock: stockData.price,
+          samsungStock: stockData.samsung,
+          googleStock: stockData.google,
+          metaStock: stockData.meta,
+          nvidiaStock: stockData.nvidia,
+          microsoftStock: stockData.microsoft,
+          goldPrice: goldData.price,
           exchangeRate: exchangeRateData.price,
           cryptoPrices: {
             bitcoin: cryptoData.bitcoin,
@@ -63,7 +75,7 @@ export default function KoreaInfoWidget() {
         })
       } catch (error) {
         console.error('Error fetching data:', error)
-        setError('Failed to load data. Please try again later.')
+        setError('Failed to load some data. Please try again later.')
         setData(null)
       }
     }
@@ -100,10 +112,10 @@ export default function KoreaInfoWidget() {
   }
 
   return (
-    <Card className="w-full max-w-md mx-auto">
+    <Card className="w-full max-w-md mx-auto sm:max-w-lg md:max-w-xl lg:max-w-2xl">
       <CardHeader className="flex flex-col items-start justify-between space-y-2">
         <div className="flex w-full justify-between items-center">
-          <CardTitle>Hyunsoo's Personal Widget</CardTitle>
+          <CardTitle className="text-base sm:text-lg md:text-xl">Hyunsoo's Personal Widget</CardTitle>
           <Button
             variant="outline"
             size="icon"
@@ -137,9 +149,41 @@ export default function KoreaInfoWidget() {
               value={data?.weather}
               loading={!data}
             />
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-sm">Stock Prices (KRW)</CardTitle>
+              </CardHeader>
+              <CardContent className="grid gap-2">
+                <InfoItem
+                  title="Samsung"
+                  value={data ? `₩${data.samsungStock.toLocaleString()}` : undefined}
+                  loading={!data}
+                />
+                <InfoItem
+                  title="Google"
+                  value={data ? `₩${data.googleStock.toLocaleString()}` : undefined}
+                  loading={!data}
+                />
+                <InfoItem
+                  title="Meta"
+                  value={data ? `₩${data.metaStock.toLocaleString()}` : undefined}
+                  loading={!data}
+                />
+                <InfoItem
+                  title="NVIDIA"
+                  value={data ? `₩${data.nvidiaStock.toLocaleString()}` : undefined}
+                  loading={!data}
+                />
+                <InfoItem
+                  title="Microsoft"
+                  value={data ? `₩${data.microsoftStock.toLocaleString()}` : undefined}
+                  loading={!data}
+                />
+              </CardContent>
+            </Card>
             <InfoItem
-              title="Samsung Stock Price"
-              value={data ? `₩${data.samsungStock.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}` : undefined}
+              title="Gold Price (KRW/oz)"
+              value={data?.goldPrice ? `₩${data.goldPrice.toLocaleString()}` : 'Unavailable'}
               loading={!data}
             />
             <InfoItem
@@ -149,22 +193,22 @@ export default function KoreaInfoWidget() {
             />
             <Card>
               <CardHeader>
-                <CardTitle className="text-sm">Cryptocurrency Prices</CardTitle>
+                <CardTitle className="text-sm">Cryptocurrency Prices (KRW)</CardTitle>
               </CardHeader>
               <CardContent className="grid gap-2">
                 <InfoItem
                   title="Bitcoin"
-                  value={data ? `₩${data.cryptoPrices.bitcoin.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : undefined}
+                  value={data ? `₩${Math.round(data.cryptoPrices.bitcoin).toLocaleString()}` : undefined}
                   loading={!data}
                 />
                 <InfoItem
                   title="Ethereum"
-                  value={data ? `₩${data.cryptoPrices.ethereum.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : undefined}
+                  value={data ? `₩${Math.round(data.cryptoPrices.ethereum).toLocaleString()}` : undefined}
                   loading={!data}
                 />
                 <InfoItem
                   title="Kaia"
-                  value={data ? `₩${data.cryptoPrices.kaia.toFixed(4)}` : undefined}
+                  value={data ? `₩${Math.round(data.cryptoPrices.kaia).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : undefined}
                   loading={!data}
                 />
               </CardContent>
@@ -175,7 +219,7 @@ export default function KoreaInfoWidget() {
       <CardFooter className="flex flex-col items-center justify-center space-y-4 pt-4 border-t">
         <div className="flex items-center space-x-2">
           <MessageSquarePlus className="h-4 w-4 text-muted-foreground" />
-          <p className="text-sm text-muted-foreground">Have a new item request?</p>
+          <p className="text-sm text-muted-foreground">Have a feature request?</p>
         </div>
         <Link
           href="https://github.com/hyunsooda/widget/issues/new"
@@ -196,7 +240,7 @@ export default function KoreaInfoWidget() {
             View source
           </Link>
           <span>•</span>
-          <span>Maintained by Hyunsoo Shin</span>
+          <span>Developed by Hyunsoo Shin</span>
         </div>
       </CardFooter>
     </Card>
