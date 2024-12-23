@@ -5,7 +5,7 @@ import { useTheme } from "next-themes"
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Button } from "@/components/ui/button"
-import { Moon, Sun, Github, MessageSquarePlus, RefreshCw, Users } from 'lucide-react'
+import { Moon, Sun, Github, MessageSquarePlus, RefreshCw, Users, Thermometer } from 'lucide-react'
 import Link from 'next/link'
 
 interface WidgetData {
@@ -16,7 +16,8 @@ interface WidgetData {
   nvidiaStock: number
   microsoftStock: number
   goldPrice: number | null
-  exchangeRate: number
+  exchangeRateKRW: number
+  exchangeRateJPY: number
   cryptoPrices: {
     bitcoin: number
     ethereum: number
@@ -65,7 +66,8 @@ export default function KoreaInfoWidget() {
           nvidiaStock: stockData.nvidia,
           microsoftStock: stockData.microsoft,
           goldPrice: goldData.price,
-          exchangeRate: exchangeRateData.price,
+          exchangeRateKRW: exchangeRateData.KRW,
+          exchangeRateJPY: exchangeRateData.JPY,
           cryptoPrices: {
             bitcoin: cryptoData.bitcoin,
             ethereum: cryptoData.ethereum,
@@ -138,17 +140,38 @@ export default function KoreaInfoWidget() {
           <Users className="h-4 w-4 text-muted-foreground" />
           <span>Visitors today: {data?.visitorCount ?? <Skeleton className="h-4 w-[30px] inline-block" />}</span>
         </div>
+        <div className="flex items-center space-x-2 text-sm">
+          <Thermometer className="h-4 w-4 text-muted-foreground" />
+          <span>Seoul Weather: {data?.weather}</span>
+        </div>
       </CardHeader>
       <CardContent className="grid gap-4">
         {error ? (
           <div className="text-red-500">{error}</div>
         ) : (
           <>
-            <InfoItem
-              title="Seoul Weather"
-              value={data?.weather}
-              loading={!data}
-            />
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-sm">Exchane Rate</CardTitle>
+              </CardHeader>
+              <CardContent className="grid gap-2">
+                <InfoItem
+                  title="KRW to USD Exchange Rate"
+                  value={data ? `₩${data.exchangeRateKRW.toFixed(2)} = $1` : undefined}
+                  loading={!data}
+                />
+                <InfoItem
+                  title="JPY to USD Exchange Rate"
+                  value={data ? `¥${data.exchangeRateJPY.toFixed(2)} = $1` : undefined}
+                  loading={!data}
+                />
+                <InfoItem
+                  title="Gold Price (KRW/oz)"
+                  value={data?.goldPrice ? `₩${data.goldPrice.toLocaleString()}` : 'Unavailable'}
+                  loading={!data}
+                />
+              </CardContent>
+            </Card>
             <Card>
               <CardHeader>
                 <CardTitle className="text-sm">Stock Prices (KRW)</CardTitle>
@@ -180,17 +203,7 @@ export default function KoreaInfoWidget() {
                   loading={!data}
                 />
               </CardContent>
-            </Card>
-            <InfoItem
-              title="Gold Price (KRW/oz)"
-              value={data?.goldPrice ? `₩${data.goldPrice.toLocaleString()}` : 'Unavailable'}
-              loading={!data}
-            />
-            <InfoItem
-              title="KRW to USD Exchange Rate"
-              value={data ? `₩${data.exchangeRate.toFixed(2)} = $1` : undefined}
-              loading={!data}
-            />
+            </Card>  
             <Card>
               <CardHeader>
                 <CardTitle className="text-sm">Cryptocurrency Prices (KRW)</CardTitle>

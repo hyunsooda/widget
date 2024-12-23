@@ -21,7 +21,8 @@ export async function GET() {
     })
     
     return NextResponse.json({
-      price: data.conversion_rates.KRW
+      KRW: data.conversion_rates.KRW,
+      JPY: data.conversion_rates.JPY,
     });
   } catch (error) {
     console.error('Error fetching exchnage rate:', error)

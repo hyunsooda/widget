@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { cachedFetch } from '@/app/api/utils/cache'
 import yahooFinance from 'yahoo-finance2'
 
 const SYMBOLS = {
@@ -11,15 +12,17 @@ const SYMBOLS = {
 
 export async function GET() {
   try {
-    const [stockData, exchangeRateResponse] = await Promise.all([
-      Promise.all(
-        Object.entries(SYMBOLS).map(async ([name, symbol]) => {
-          const quote = await yahooFinance.quote(symbol)
-          return { [name.toLowerCase()]: quote.regularMarketPrice }
-        })
-      ),
-      fetch('https://api.exchangerate-api.com/v4/latest/USD')
-    ])
+    const [stockData, exchangeRateResponse] = await cachedFetch('stock', async () => {
+      return await Promise.all([
+        Promise.all(
+          Object.entries(SYMBOLS).map(async ([name, symbol]) => {
+            const quote = await yahooFinance.quote(symbol)
+            return { [name.toLowerCase()]: quote.regularMarketPrice }
+          })
+        ),
+        fetch('https://api.exchangerate-api.com/v4/latest/USD')
+      ])
+    })
 
     if (!exchangeRateResponse.ok) {
       throw new Error('Failed to fetch exchange rate')
